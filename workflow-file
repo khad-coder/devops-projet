@@ -1,0 +1,7 @@
+- name: Installer les dépendances
+  run: |
+    sudo apt update
+    # Install Ansible
+    sudo apt install -y ansible
+    # Install Terraform via Snap
+    sudo snap install terraform --classic
