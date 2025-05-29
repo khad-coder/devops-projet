@@ -1,0 +1,87 @@
+- name: Déploiement stack Docker LEMP avec Ansible
+  hosts: web
+  become: true
+  gather_facts: yes
+
+  vars:
+    user: deploy
+    home_dir: "/home/{{ user }}"
+    git_repo: "https://github.com/ton-user/ton-projet.git"  # <-- à modifier
+    project_dir: "{{ home_dir }}/devops-projet"
+
+  tasks:
+    - name: Créer un utilisateur non-root
+      user:
+        name: "{{ user }}"
+        shell: /bin/bash
+        groups: sudo
+        append: yes
+        create_home: yes
+
+    - name: Autoriser le user à utiliser sudo sans mot de passe
+      lineinfile:
+        path: /etc/sudoers
+        state: present
+        line: "{{ user }} ALL=(ALL) NOPASSWD:ALL"
+
+    - name: Installer les paquets nécessaires
+      apt:
+        name: "{{ item }}"
+        update_cache: yes
+        state: present
+      loop:
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - gnupg
+        - lsb-release
+        - git
+
+    - name: Ajouter clé GPG Docker
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Ajouter dépôt Docker
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
+        state: present
+        filename: docker
+
+    - name: Installer Docker et Docker Compose
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-compose-plugin
+        state: present
+        update_cache: yes
+
+    - name: Ajouter l'utilisateur deploy au groupe docker
+      user:
+        name: "{{ user }}"
+        groups: docker
+        append: yes
+
+    - name: Créer le dossier du projet
+      file:
+        path: "{{ project_dir }}"
+        state: directory
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: '0755'
+
+    - name: Cloner le dépôt Git du projet
+      git:
+        repo: "{{ git_repo }}"
+        dest: "{{ project_dir }}"
+        version: main
+        update: yes
+        force: yes
+
+    - name: Lancer Docker Compose
+      shell: docker compose up -d
+      args:
+        chdir: "{{ project_dir }}/ansible"
+      become_user: "{{ user }}"
