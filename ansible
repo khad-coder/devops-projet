@@ -1,0 +1,14 @@
+devops-projet/
+├── ansible/
+│   ├── playbook.yml         # Déploiement complet
+│   └── hosts                # Fichier d'inventaire
+├── docker-compose.yml       # Stack LEMP (PHP, Nginx, MySQL)
+├── php/
+│   └── Dockerfile
+├── nginx/
+│   └── default.conf
+├── html/
+│   ├── index.html
+│   └── test-db.php
+├── .gitignore
+└── README.md
