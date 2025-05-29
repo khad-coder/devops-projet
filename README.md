@@ -1,114 +1,70 @@
-# 🚀 Présentation du Projet DevOps — Stack LEMP Automatisée
+# 📦 Projet DevOps – Déploiement d'une Stack LEMP avec Ansible & Docker
 
-## 🌟 Objectif
+## 🔧 Objectif
 
-Déployer automatiquement une **application web LEMP** (Linux, Nginx, MySQL, PHP) sur un serveur distant à l'aide d'**Ansible**, **Docker**, **Git**, et un système de **CI/CD personnalisé via webhook**.
+Automatiser le déploiement d'une stack **LEMP** (Linux, Nginx, MariaDB, PHP) à l’aide d’**Ansible** et **Docker Compose** pour simplifier la gestion des environnements de développement ou de production.
 
 ---
 
-## 🧱 Architecture du Projet
+## 📁 Structure du projet
 
-```txt
-📁 devops-projet/
-🗄 ansible/
-├── playbook.yml          # Playbook principal Ansible
-├── hosts                 # Fichier d'inventaire (ex : 192.168.10.20)
-🗄 docker-compose.yml        # Stack LEMP (nginx, php, mysql, adminer)
-🗄 html/
-├── index.html            # Page d'accueil
-└── test-db.php           # Script de test MySQL
-🗄 nginx/
-└── default.conf          # Configuration de nginx
-🗄 php/
-└── Dockerfile            # Dockerfile PHP avec extensions nécessaires
+```
+devops-projet/
+├── ansible/
+│   ├── docker-compose.yml       # Définition des services Docker
+│   ├── Dockerfile               # Dockerfile principal
+│   ├── php/Dockerfile           # Dockerfile PHP-FPM
+│   ├── nginx/default.conf       # Configuration Nginx
+│   ├── html/index.html          # Page web d'accueil
+│   ├── html/test-db.php         # Script test connexion DB
+│   ├── hosts                    # Fichier d'inventaire Ansible
+│   └── playbook.yml             # Playbook de déploiement complet
+├── install_docker.yml           # Playbook indépendant pour installer Docker
+└── README.md                    # Documentation du projet
 ```
 
 ---
 
-## ⚙️ Fonctionnement du Playbook Ansible
+## 🚀 Fonctionnalités Automatisées
 
-Le fichier `ansible/playbook.yml` automatise les étapes suivantes :
-
-1. **Création d’un utilisateur non-root sécurisé (`deploy`)**
-2. **Installation de Docker & Docker Compose**
-3. **Ajout de l'utilisateur au groupe `docker`**
-4. **Création du répertoire du projet**
-5. **Clonage du dépôt Git**
-6. **Déploiement de l’application via `docker-compose up -d --build`**
+✅ Création d’un utilisateur `deploy` non-root sécurisé  
+✅ Installation automatique de **Docker** et **Docker Compose**  
+✅ Ajout de l’utilisateur au groupe `docker`  
+✅ Déploiement via `docker-compose`  
+✅ Clonage d’un dépôt Git (CI/CD simplifié)  
+✅ Stack **LEMP** opérationnelle avec page d'accueil et test de connexion DB
 
 ---
 
-## 🔐 Sécurité
+## 📜 Pré-requis
 
-* Utilisation d’un **utilisateur non-root (`deploy`)**
-* Accès `sudo` sans mot de passe limité à ce compte pour déploiement
-* Connexion SSH sécurisée (via mot de passe ou clé, à configurer selon environnement)
-
----
-
-## 🔄 CI/CD avec Webhook Git
-
-* Déploiement déclenché automatiquement après chaque **push sur le dépôt Git** :
-
-  * `git pull`
-  * `docker-compose down && docker-compose up -d --build`
-
-* Serveur Python Flask minimaliste écoutant sur le port `9000` :
-
-  * URL webhook : `http://192.168.10.20:9000/hook`
+- Un hôte Ubuntu 20.04+ avec accès SSH
+- Python 3 installé
+- Accès root ou utilisateur avec sudo
 
 ---
 
-## 🧪 Technologies Utilisées
+## ▶️ Commandes de lancement
 
-| Composant         | Rôle                                           |
-| ----------------- | ---------------------------------------------- |
-| **Ansible**       | Automatisation de l'installation & déploiement |
-| **Docker**        | Conteneurisation des services                  |
-| **Nginx**         | Reverse proxy pour PHP                         |
-| **MySQL**         | Base de données                                |
-| **Adminer**       | Interface d’administration DB                  |
-| **Git + Webhook** | CI/CD simplifié                                |
-| **Flask**         | Serveur webhook léger                          |
+```bash
+# 1. Modifier le fichier d'inventaire Ansible
+nano ansible/hosts
+
+# 2. Lancer le playbook principal
+ansible-playbook -i ansible/hosts ansible/playbook.yml
+```
 
 ---
 
-## 📌 Pré-requis côté serveur distant (target)
+## 🛠 Exemple de configuration `hosts`
 
-* OS : Ubuntu (testé sur 20.04+)
-* Ports ouverts : 22 (SSH), 80 (HTTP), 8080 (Adminer), 9000 (Webhook)
-* Authentification SSH configurée (dans `ansible/hosts`)
-* Accès internet pour récupérer les paquets Docker, Git, etc.
-
----
-
-## 📍 Pour lancer le projet
-
-1. Modifier le fichier `ansible/hosts` :
-
-   ```ini
-   [web]
-   192.168.10.20 ansible_user=root ansible_ssh_pass=motdepasse
-   ```
-
-2. Lancer le playbook :
-
-   ```bash
-   ansible-playbook -i ansible/hosts ansible/playbook.yml
-   ```
-
-3. (Optionnel) Activer le webhook CI/CD avec :
-
-   ```bash
-   nohup python3 /opt/hooks/webhook.py &
-   ```
+```ini
+[web]
+192.168.10.20 ansible_user=root ansible_ssh_pass=motdepasse
+```
 
 ---
 
-## ✅ Résultat attendu
+## ✨ Bonus CI/CD
 
-Une stack LEMP complète déployée et opérationnelle :
-
-* Application accessible via le navigateur
-* Adminer disponible sur `http://192.168.10.20:8080`
-* Code mis à jour automatiquement à chaque `git push`
+Le dépôt Git peut être connecté à un **webhook** GitHub pour un déploiement continu, grâce à l’étape de clonage automatique intégrée dans le playbook.
