@@ -1,0 +1,29 @@
+name: Déploiement DevOps
+
+on:
+  push:
+    branches:
+      - main  # Déclenchement sur push vers la branche principale
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cloner le repo
+        uses: actions/checkout@v3
+
+      - name: Installer les dépendances
+        run: |
+          sudo apt update
+          sudo apt install -y ansible terraform
+
+      - name: Lancer Terraform
+        run: |
+          cd terraform
+          terraform init
+          terraform apply -auto-approve
+
+      - name: Exécuter Ansible
+        run: |
+          cd ansible
+          ansible-playbook -i inventory.ini playbook_caddy.yml
